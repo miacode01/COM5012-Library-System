@@ -1,0 +1,126 @@
+#include <iostream>
+#include <vector>
+#include  <string>
+using namespace std;
+
+class Book {
+public:
+    string title;
+    bool isBorrowed;
+
+    Book(string t) {
+        title = t;
+        isBorrowed = false;
+
+    }
+
+};
+
+class User {
+protected:
+    string username;
+    string password;
+
+public:
+    User(string u, string p) {
+        username = u;
+        password = p;
+    }
+    bool login(string u, string p) {
+        return (u == username && p == password);
+    }
+};
+class Member : public User {
+public:
+    Member(string u, string p) :User(u, p) {}
+    void viewBooks(vector<Book>& books) {
+        cout << "\nAvailable books:\n";
+        for (int i = 0; i < books.size(); i++) {
+            cout << i + 1 << "." << books[i].title;
+            if (books[i].isBorrowed)
+                cout << "(Borrowed)";
+            cout << endl;
+        }
+    }
+    void borrowBook(vector<Book>& books, int index) {
+        if (index < 0 || index >= books.size()) {
+            cout << "Invalid book number.\n";
+            return;
+        }
+        if (!books[index].isBorrowed) {
+            books[index].isBorrowed = true;
+            cout << "You borrowed: " << books[index].title << endl;
+        }
+        else {
+            cout << "Sorry, that book is already borrowed.\n";
+        }
+    }
+    void returnBook(vector<Book>& books, int index) {
+        if (index < 0 || index >= books.size()) {
+            cout << "Invalid book number.\n";
+            return;
+        }
+        if (books[index].isBorrowed) {
+            books[index].isBorrowed = false;
+            cout << "You returned: " << books[index].title << endl;
+        }
+        else {
+            cout << "That book was not borrowed.\n";
+        }
+    }
+};
+
+
+int main() {
+    vector<Book> books;
+    books.push_back(Book("The Hobbit"));
+    books.push_back(Book("1984"));
+    books.push_back(Book("The Da Vinci Code"));
+    books.push_back(Book("Wuthering Heights"));
+    books.push_back(Book("Frankenstein"));
+    Member member("student", "2026");
+    string u, p;
+    cout << "Login\nUsername: ";
+    cin >> u;
+    cout << "Password: ";
+    cin >> p;
+    if (member.login(u, p)) {
+        cout << "\Invalid login.\n";
+        return 0;
+    }
+    cout << "\nLogin successful!\n";
+    int choice = 0;
+    while (choice != 4) {
+        cout << "\n --- Library Menu ---\n";
+        cout << "1. View books\n";
+        cout << "2. Borrow book\n";
+        cout << "3. Return book\n";
+        cout << "4.Exit\n";
+        cout << "Choose an option ";
+        cin >> choice;
+        if (choice == 1) {
+            member.viewBooks(books);
+}
+        else if (choice == 2) {
+            int bookNum;
+            member.viewBooks(books);
+            cout << "Enter book number to borrow:";
+            cin >> bookNum;
+            member.borrowBook(books, bookNum - 1);
+        }
+        else if (choice == 3) {
+            int bookNum;
+            member.viewBooks(books);
+            cout << "Enter book number to return: ";
+            cin >> bookNum;
+            member.returnBook(books, bookNum - 1);
+        }
+        else if (choice == 4) {
+            cout << "Goodbye!\n";
+        }
+        else {
+            cout << "Invalid option.\n";
+        }
+    }
+    return 0;
+}
