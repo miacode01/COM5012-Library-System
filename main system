@@ -124,3 +124,97 @@ int main() {
     }
     return 0;
 }
+
+//Librarian//
+class Librarian {
+  private:
+  string username;
+  int LibrarianID;
+vector <string> books;
+vector <string> issued;
+
+  public:
+  Librarian(string u, int id) {
+    username = u;
+    LibrarianID = id;
+}
+    void displayInfo() {
+      cout <<"Librarian Name:" <<username <<endl;
+      cout <<"Librarian ID:" <<LibrarianID <<endl;
+    }
+    void addBook(string bookname) {
+    books.push_back(bookname);
+    cout << "Book \"" <<bookname << "\" added to library." << endl;
+}
+    void showBooks() {
+      if (books.empty()) {
+        cout << "No available books." <<endl;
+        return;
+      }
+      cout << "\nAvailable Books:\n";
+      for (int i=0; i <books.size(); i++) {
+        cout << i + 1 << "." << books[i] << endl;
+      }
+    }
+    void IssueBook(string bookname) {
+     for (int i=0; i< books.size(); i++) {
+      if (books[i] == bookname) {
+        issued.push_back(bookname);
+        books.erase(books.begin() + i);
+        cout << "Book\"" <<bookname << "\" Issued Success!" <<endl;
+        return;
+      }
+     }
+cout << "Book unavailable." <<endl;
+}
+
+    void returnBook(string bookname) {
+    for (int i=0; i < issued.size(); i++) {
+      if (issued[i] ==bookname) {
+        books.push_back(bookname);
+        issued.erase(issued.begin() + i);
+        cout << "Book \"" <<bookname << "\" Return Success!" <<endl;
+        return;
+      }
+    }
+    cout << "This book was not issued." <<endl;
+    }
+void OverdueBook(string bookname, int dueDate, int today) {
+  if (today > dueDate) {
+    cout << "Book\"" <<bookname << "\" BOOK IS OVERDUE!" << endl;
+    cout << "Late by" <<(today -dueDate) << "days." <<endl;
+  }else {
+    cout << "Book \"" <<bookname << "\" is not overdue." <<endl;
+  }
+}
+};
+
+
+
+int main() {
+  Librarian library("Librarian", 123);
+  string bookname = "The Hobbit";
+int dueDate = 30;
+int today = 35;
+cout << "---Librarian Info---" <<endl;
+  library.displayInfo();
+
+cout << "\n--Add Books--"<<endl;
+library.addBook("The Hobbit");
+library.addBook ("1984");
+library.addBook ("The Da Vinci Code");
+
+library.showBooks();
+
+cout <<"\n---IssueBook---" <<endl;
+  library.IssueBook("The Hobbit");
+
+library.showBooks();
+
+cout <<"\n---ReturnBook---" <<endl;
+  library.returnBook("The Hobbit");
+
+cout <<"\n---Overdue Books---" <<endl;
+library.OverdueBook(bookname, dueDate, today);
+  return 0;
+}
