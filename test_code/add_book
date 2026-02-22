@@ -1,0 +1,105 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+
+class Book {
+  public:
+  string title;
+  string author;
+  string dueDate;
+
+
+  Book(string t, string a, string d) {
+    title = t;
+    author = a;
+    dueDate = d;
+
+
+}
+ void display() {
+  cout << "Title:" << title <<
+   ", Author:" << author
+  <<",Due date:" << dueDate << endl;
+ }
+
+};
+
+bool login() {
+  string username, password;
+
+  cout <<"Username";
+  cin >> username;
+  cout <<"Password";
+  cin >> password;
+
+  if (username =="Librarian" && password =="2026") {
+    cout <<"Entered System\n";
+    return true;
+  } else {
+    cout <<"Please try again\n";
+    return false;
+  }
+}
+void addBook(vector<Book>& library) {
+  if (library.size() >=5) {
+    cout << "Maximum Books Registered.\n";
+    return;
+  }
+
+  string title, author, dueDate;
+
+  cin.ignore();
+
+cout <<"Enter book title:";
+getline(cin, title);
+
+cout <<"Enter book author:";
+getline(cin, author);
+
+cout <<"Enter Due Date:";
+getline(cin, dueDate);
+
+library.push_back(Book(title,author,dueDate));
+
+cout << "Book added!\n";
+}
+
+void showBooks(vector<Book>& library) {
+  if (library.empty()) {
+    cout << "No books in system.\n";
+    return;
+  }
+  for (Book& b: library) {
+    b.display();
+  }
+}
+int main() {
+vector<Book> library;
+
+if (!login()) {
+  return 0;
+}
+
+int select;
+
+do {
+  cout << "1.Add Books\n";
+  cout << "2. Show Books\n";
+  cout << "3.Exit\n";
+  cout << "Select";
+  cin >> select;
+
+  if (select ==1) {
+    addBook(library);
+  }
+  else if (select ==2) {
+    showBooks(library);
+  }
+} while (select !=3);
+
+return 0;
+
+}
