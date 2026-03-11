@@ -1,0 +1,458 @@
+//SMART LIBRARY MANAGEMENT SYSTEM//
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class User;
+
+class Book {
+private:
+    string title;
+    bool available;
+    User* reservedby;
+
+public:
+    Book(string t) : title(t), available(true), reservedby(nullptr) {}
+
+    string getTitle() const {
+        return title;
+    }
+    bool isAvailable() const {
+        return available;
+    }
+    bool isReserved() const {
+        return reservedby != nullptr;
+    }
+    User* getReservedby() const {
+        return reservedby;
+    }
+
+    void borrowBook() {
+        available = false;
+        reservedby = nullptr;
+    }
+
+    void returnBook() {
+        available = true;
+    }
+    void reserveBook(User* user) {
+        reservedby = user;
+    }
+    void clearReservation() {
+        reservedby = nullptr;
+    }
+
+};
+
+class Account {
+protected:
+    string username;
+    string password;
+
+public:
+    Account(string u, string p) : username(u), password(p) {}
+    bool login(string u, string p) {
+        return (u == username && p == password);
+    }
+    string getUsername() const {
+        return username;
+    }
+
+    virtual void showMenu() = 0;
+};
+
+class User : public Account {
+private:
+    vector<Book*> borrowedBooks;
+    int overduedays;
+    double fine;
+
+public:
+    User(string u, string p)
+        :Account(u, p), overduedays(0), fine(0) {}
+
+    bool canBorrow() {
+        return borrowedBooks.size() < 5 && fine == 0;
+    }
+
+    void borrowBook(Book& book) {
+        borrowedBooks.push_back(&book);
+        book.borrowBook();
+    }
+
+    void reserveBook(Book& book) {
+        book.reserveBook(this);
+        cout << "Book reserved successfully\n.";
+    }
+
+    void returnBook(int index) {
+        if (index >= 0 && index < borrowedBooks.size()) {
+            borrowedBooks[index]->returnBook();
+            borrowedBooks.erase(borrowedBooks.begin() + index);
+            cout << "Book returned\n";
+        }
+        else {
+            cout << "Invalid selection\n";
+        }
+    }
+
+    void showBorrowedBooks() {
+        if (borrowedBooks.empty()) {
+            cout << "No borrowed books.\n";
+            return;
+        }
+        for (int i = 0; i < borrowedBooks.size(); i++) {
+            cout << i + 1 << ". "
+                << borrowedBooks[i]->getTitle() << endl;
+        }
+    }
+
+    void addOverduedays(int days) {
+        overduedays = days;
+    }
+
+    void calculatefine() {
+        fine = 0;
+        overduedays = 0;
+    }
+
+    void clearfine() {
+        fine = 0;
+        overduedays = 0;
+    }
+
+    double getFine() const {
+        return fine;
+    }
+
+    void showMenu() override {
+        cout << "\n ----BOOK INVENTORY----\n";
+        cout << "1. View books\n";
+        cout << "2. Search Books\n";
+        cout << "3. Borrow book\n";
+        cout << "4. Reserve books\n";
+        cout << "5. View borrowed books\n";
+        cout << "6. Return book\n";
+        cout << "7. View fine\n";
+        cout << "8. Logout\n";
+    }
+};
+
+class Librarian : public Account {
+public:
+    Librarian(string u, string p)
+        :Account(u, p) {}
+
+    void markOverdue(User& user, int days) {
+        user.addOverduedays(days);
+        cout << "Overdue days updated!\n";
+    }
+    void addBook(vector<Book>& books, const string& title) {
+        books.push_back(Book(title));
+        cout << "Book added successfully!\n";
+    }
+
+    void handleReservations(vector<Book>& books) {
+        bool found = false;
+
+        for (int i = 0; i < books.size(); i++) {
+            if (books[i].isReserved()) {
+                found = true;
+                cout << i + 1 << ". "
+                    << books[i].getTitle()
+                    << "reserved by"
+                    << books[i].getReservedby()->getUsername()
+                    << endl;
+
+                cout << "Approve reservation? (y/n):";
+                char choice;
+                cin >> choice;
+
+                if (choice == 'y') {
+                    if (books[i].getReservedby()->canBorrow()) {
+                        books[i].getReservedby()->borrowBook(books[i]);
+                        cout << "Reservation approved!\n";
+                    }
+                    else {
+                        cout << "Member cannot borrow this book\n";
+                        books[i].clearReservation();
+                    }
+                }
+            }
+        }
+        if (!found)
+            cout << "No reservations found!\n";
+    }
+
+    void showMenu() override {
+        cout << "\n----LIBRARIAN MENU----\n";
+        cout << "1. Manage Overdue days\n";
+        cout << "2. Add new book\n";
+        cout << "3. Handle reservations\n";
+        cout << "4. Logout\n";
+    }
+};
+
+class Admin : public Account {
+public:
+
+    Admin(string u, string p)
+        :Account(u, p) {}
+
+    void processFine(User& user) {
+        user.calculatefine();
+        cout << "Fine calculated!\n";
+    }
+
+    void clearFine(User& user) {
+        user.clearfine();
+        cout << "Fine cleared\n";
+    }
+
+    void addUser(vector<User>& users,
+        const string& username,
+        const string& password) {
+        users.push_back(User(username, password));
+        cout << "New member added successfully!\n";
+    }
+
+    void showMenu() override {
+        cout << "\n----ADMINISTRATOR MENU----\n";
+        cout << "1. Calculate fine\n";
+        cout << "2. Clear fine\n";
+        cout << "3. Add new member\n";
+        cout << "4.Logout\n";
+    }
+};
+
+void searchBooks(vector<Book>& books) {
+    string keyword;
+
+    cout << "Enter keyword: (example:'A')";
+    cin.ignore();
+    getline(cin, keyword);
+
+    bool found = false;
+
+    for (int i = 0; i < books.size(); i++) {
+        if (books[i].getTitle().find(keyword) != string::npos) {
+
+            cout << i + 1 << ". " << books[i].getTitle();
+
+            if (books[i].isAvailable())
+                cout << "(Available)";
+            else
+                cout << "(Not Available)";
+
+            cout << endl;
+
+            found = true;
+        }
+    }
+    if (!found)
+        cout << "No matching books found\n";
+}
+
+int main() {
+    vector<Book> libraryBooks = {
+      Book("The Hobbit"),
+      Book("1984"),
+      Book("The Da Vinci Code"),
+      Book("Wuthering Heights"),
+      Book("Frankenstien"),
+      Book("The Alchemist"),
+      Book("Sherlock Holmes"),
+      Book("Harry Potter"),
+      Book("The Shining"),
+    };
+
+    vector<User> users;
+    users.push_back(User("member", "2026"));
+
+    Librarian librarian("librarian", "2026");
+    Admin admin("admin", "2026");
+
+    while (true) {
+        cout << "\n----SMART LIBRARY MANAGMENT SYSTEM----\n";
+        cout << "1. Member\n";
+        cout << "2. Librarian\n";
+        cout << "3. Admin\n";
+        cout << "4. Exit program\n";
+        cout << "Type number:";
+
+        int rolechoice;
+        cin >> rolechoice;
+
+        if (rolechoice == 4) {
+            cout << "Goodbye!\n";
+            break;
+        }
+        string usernameinput, passwordinput;
+        cout << "Username:";
+        cin >> usernameinput;
+        cout << "Password:";
+        cin >> passwordinput;
+
+        if (rolechoice == 1) {
+            User* currentUser = nullptr;
+
+            for (int i = 0; i < users.size(); i++) {
+                if (users[i].login(usernameinput, passwordinput)) {
+                    currentUser = &users[i];
+                    break;
+                }
+            }
+
+            if (!currentUser) {
+                "Invalid Login\n";
+                continue;
+            }
+            int choice;
+            do {
+                currentUser->showMenu();
+                cout << "Type number:";
+                cin >> choice;
+
+                if (choice == 1) {
+                    for (int i = 0; i < libraryBooks.size(); i++) {
+                        cout << i + 1 << ". "
+                            << libraryBooks[i].getTitle();
+
+                        if (libraryBooks[i].isAvailable())
+                            cout << "(Available)";
+                        else
+                            cout << "(Not Available)";
+
+                        if (libraryBooks[i].isReserved())
+                            cout << "(Reserved)";
+
+                        cout << endl;
+                    }
+                }
+                else if (choice == 2) {
+                    searchBooks(libraryBooks);
+                }
+
+                else if (choice == 3) {
+                    int bookNum;
+                    cout << "Enter book number:";
+                    cin >> bookNum;
+
+                    if (bookNum > 0 &&
+                        bookNum <= libraryBooks.size() &&
+                        libraryBooks[bookNum - 1].isAvailable() &&
+                        currentUser->canBorrow()) {
+
+                        currentUser->borrowBook(
+                            libraryBooks[bookNum - 1]);
+                        cout << "Book borrowed!\n";
+                    }
+                    else {
+                        cout << "Cannot borrow book.\n";
+                    }
+                }
+
+                else if (choice == 4) {
+                    int bookNum;
+                    cout << "Enter book number to reserve:";
+                    cin >> bookNum;
+
+                    if (bookNum > 0 &&
+                        bookNum <= libraryBooks.size() &&
+                        !libraryBooks[bookNum - 1].isAvailable() &&
+                        !libraryBooks[bookNum - 1].isReserved()) {
+
+                        currentUser->reserveBook(
+                            libraryBooks[bookNum - 1]);
+                    }
+                    else {
+                        cout << "Cannot reserve this book\n";
+                    }
+                }
+                else if (choice == 5) {
+                    currentUser->showBorrowedBooks();
+                }
+
+                else if (choice == 6) {
+                    currentUser->showBorrowedBooks();
+                    int index;
+                    cout << "Enter book number to return:";
+                    cin >> index;
+                    currentUser->returnBook(index - 1);
+                }
+
+                else if (choice == 7) {
+                    cout << "Current fine: £"
+                        << currentUser->getFine() << endl;
+                }
+            } while (choice != 8);
+
+        }
+
+        else if (rolechoice == 2) {
+            if (!librarian.login(usernameinput, passwordinput)) {
+                cout << "Invalid login.\n";
+                continue;
+            }
+
+            int choice;
+            do {
+                librarian.showMenu();
+                cout << "Type number:";
+                cin >> choice;
+
+                if (choice == 1) {
+                    int days;
+                    cout << "Enter Overdue days for first member:";
+                    cin >> days;
+                    librarian.markOverdue(users[0], days);
+                }
+                else if (choice == 2) {
+                    string title;
+                    cout << "Enter book title";
+                    cin.ignore();
+                    getline(cin, title);
+                    librarian.addBook(libraryBooks, title);
+                }
+
+                else if (choice == 3) {
+                    librarian.handleReservations(libraryBooks);
+                }
+
+            } while (choice != 4);
+
+        }
+        else if (rolechoice == 3) {
+            if (!admin.login(usernameinput, passwordinput)) {
+                cout << "Invalid login\n";
+                continue;
+            }
+
+            int choice;
+            do {
+                admin.showMenu();
+                cout << "Type number:";
+                cin >> choice;
+
+                if (choice == 1)
+                    admin.processFine(users[0]);
+
+                else if (choice == 2)
+                    admin.clearFine(users[0]);
+
+                else if (choice == 3) {
+                    string newUser, newPass;
+                    cout << "Enter new username:";
+                    cin >> newUser;
+                    cout << "Enter new password:";
+                    cin >> newPass;
+                    admin.addUser(users, newUser, newPass);
+                }
+            } while (choice != 4);
+        }
+    }
+    return 0;
+
+}
