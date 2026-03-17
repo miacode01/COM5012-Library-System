@@ -7,10 +7,17 @@ There are three files: test_code, coding, my library system.
 2. coding. Originally named 'main system' this was where I showcased my changes to the code.
 3. my library system.cpp -> The Smart Library Management System code is contained within this file!!
 
+**UPDATE PLEASE READ**
+I wanted to let you know about an issue I've identified with the current implementation. When attempting to download the my library system.cpp file, the code won't run on visual studio. Please read these instructions below on how to run the code properly. Since my program doesn't include headers, you simply need to copy the code onto a new c++ file.
+
 How to use the code:
 1. Open Visual Studio 2022.
-2. Simply download 'my library system.cpp' or copy the code over to a new c++ file.
-3. Run the code!
+2. Select 'All Languages', you should be able to see a C++ option or type C++ in the search bar.
+3. Select 'Console App' and press 'Next'.
+4. Type 'my library system' you don't need to type .cpp at the end.
+5. Visual studio has an already existing folder within source\repos, if you'd like you can create a new folder within your computer drive (this will store the code and files).
+6. Delete the already existing code, click on 'my library system.cpp' in (<> Code) next to **Raw** there are two squares together 'Copy raw file' (this copies the entire code). Paste the code into visual studio.
+7. Next to **Local Windows Debugger** press the dark green arrow. Run the code! :D
 
 Homepage (Wiki)
 This is where the main homepage is with a table of contents, it also gives a short summary of what is contained within the library system.
